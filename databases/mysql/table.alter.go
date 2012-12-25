@@ -1,11 +1,11 @@
 package mysql
 
 import (
-	"fmt"
 	"github.com/scalia/mysynql/log"
+	"fmt"
 )
 
-func (table *Table) Alter(channel chan bool, current *Table) {
+func (table *Table) Alter(channel chan bool, conn *Connection, current *Table) {
 	log.Log(fmt.Sprintf("Processing diff of table `%s`", table.Name))
 
 	defer func() {

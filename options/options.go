@@ -8,6 +8,9 @@ type Options struct {
 	StructureFile, DumpFile string
 	Version bool
 
+	// Dump mode parameters.
+	DataTables StringList
+
 	// Verbosity level.
 	VeryQuiet, Quiet, Verbose, VeryVerbose, Debug bool
 }

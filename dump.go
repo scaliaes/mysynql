@@ -7,6 +7,8 @@ import (
 	"encoding/xml"
 	"fmt"
 	"time"
+	"io/ioutil"
+	"strings"
 )
 
 func dump() {
@@ -16,15 +18,20 @@ func dump() {
 
 	opts := & options.ProgramOptions
 
-	database := mysql.ReadConnection(opts.Host, opts.User, opts.Pass, opts.SchemaName, true)
+	database := mysql.ReadConnection(opts.Host, opts.User, opts.Pass, opts.SchemaName, opts.DataTables)
 
-	if opts.Debug {
-		xml, err := xml.MarshalIndent(database, "", "\t")
-		if nil != err {
-			panic(err)
-		}
+	xml, err := xml.MarshalIndent(database, "", "\t")
+	if nil != err {
+		panic(err)
+	}
 
-		log.Debug(string(xml))
+	str := string(xml)
+	log.Debug(str)
+	str = strings.TrimSpace(str)+"\n"
+
+	err = ioutil.WriteFile(opts.DumpFile, []byte(str), 0644)
+	if nil != err {
+		panic(err)
 	}
 
 	endTime := time.Now()

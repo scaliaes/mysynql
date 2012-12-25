@@ -2,10 +2,11 @@ package mysql
 
 import (
 	"github.com/scalia/mysynql/log"
+	"github.com/scalia/mysynql/options"
 	"fmt"
 )
 
-func (database *Database) ReadConnection(conn *Connection, readData bool) {
+func (database *Database) ReadConnection(conn *Connection, dataTables options.StringList) {
 	dbname := conn.DbName
 	sql := "SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME" +
 		" FROM INFORMATION_SCHEMA.SCHEMATA" +
@@ -61,20 +62,17 @@ func (database *Database) ReadConnection(conn *Connection, readData bool) {
 		database.Tables = append(database.Tables, table)
 	}
 
+	// Read connection, dumping data if requested.
 	channel := make(chan bool)
+	ntables := len(database.Tables)
 	for index, _ := range database.Tables {
-		go database.Tables[index].ReadConnection(conn, channel, readData)
+		dumpData := dataTables.Contains(database.Tables[index].Name)
+		go database.Tables[index].ReadConnection(conn, channel, dumpData)
 	}
-
+	
 	result := true
-	for i:= len(database.Tables); i>0; i-- {
+	for i:= 0; i<ntables; i++ {
 		result = result && <- channel
 	}
 	close(channel)
-
-	if result {
-		log.Verbose("COMMIT")
-	} else {
-		log.Verbose("ROLLBACK")
-	}
 }

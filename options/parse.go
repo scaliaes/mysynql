@@ -29,6 +29,9 @@ func init() {
 	flag.StringVar(&ProgramOptions.DumpFile, "dump", "", "xml dump file of a database structure.")
 	flag.StringVar(&ProgramOptions.StructureFile, "restore", "", "xml dump file of a database structure.")
 
+	// Dump mode parameters
+	flag.Var(&ProgramOptions.DataTables, "data", "dump data from these tables.")
+
 	// Verbosity level
 	flag.BoolVar(&ProgramOptions.VeryQuiet, "qq", false, "don't produce any output.")
 	flag.BoolVar(&ProgramOptions.Quiet, "q", false, "only show errors.")
@@ -45,9 +48,11 @@ func Parse() bool {
 	flag.Usage = usage
 	flag.Parse()
 
+	// Host must be of the form host:port
 	if ! strings.ContainsRune(ProgramOptions.Host, ':') {
 		ProgramOptions.Host += ":3306"
 	}
+
 	// Activate 'debug' mode.
 	ProgramOptions.Debug = ProgramOptions.VeryVerbose
 

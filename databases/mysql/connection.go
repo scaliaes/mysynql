@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"github.com/ziutek/mymysql/autorc"
+	mymysql "github.com/ziutek/mymysql/mysql"
 	_ "github.com/ziutek/mymysql/thrsafe" // Thread safe engine
 	"github.com/scalia/mysynql/log"
 )
@@ -38,4 +39,8 @@ func NewConnection(host, user, password, database string) Connection {
 
 func (conn *Connection) Prepare(sql string) (*autorc.Stmt, error) {
 	return conn.Conn.Prepare(sql)
+}
+
+func (conn *Connection) Query(sql string, args ...interface{}) ([]mymysql.Row, mymysql.Result, error) {
+	return conn.Conn.Query(sql, args...)
 }

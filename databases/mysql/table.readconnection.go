@@ -133,6 +133,7 @@ func (table *Table) ReadConnection(conn *Connection, channel chan bool, readData
 
 	table.TruncateTable = readData
 	if readData {
+		log.Log(fmt.Sprintf("Dumping data from table `%s`.`%s`", conn.DbName, table.Name))
 		// Read data
 		sql = fmt.Sprintf("SELECT * FROM `%s`", table.Name)
 		stmt, err = conn.Prepare(sql)
@@ -155,4 +156,6 @@ func (table *Table) ReadConnection(conn *Connection, channel chan bool, readData
 			table.Rows = append(table.Rows, r)
 		}
 	}
+
+	log.Log(fmt.Sprintf("Done reading table `%s`.`%s`", conn.DbName, table.Name))
 }

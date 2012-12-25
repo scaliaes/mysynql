@@ -3,14 +3,23 @@ package mysql
 import (
 	"github.com/scalia/mysynql/log"
 	"github.com/scalia/mysynql/options"
-	"fmt"
 	"encoding/xml"
 )
 
-func (database *Database) Apply(conn *Connection) {
+func (database *Database) Apply(conn *Connection) bool {
 	opts := & options.ProgramOptions
 
-	current := ReadConnection(opts.Host, opts.User, opts.Pass, opts.SchemaName, false)
+	current := ReadConnection(opts.Host, opts.User, opts.Pass, opts.SchemaName, options.StringList{})
+
+	// Disable checks.
+	_, _, err := conn.Query("SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0")
+	if nil != err {
+		panic(err)
+	}
+	_, _, err = conn.Query("SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0")
+	if nil != err {
+		panic(err)
+	}
 
 	if opts.Debug {
 		xml, err := xml.MarshalIndent(current, "", "\t")
@@ -19,6 +28,27 @@ func (database *Database) Apply(conn *Connection) {
 		}
 
 		log.Debug(string(xml))
+	}
+
+	channel, count := make(chan bool), 0
+	// Process tables in XML.
+	for index := range database.Tables {
+		present := false
+		position := 0
+		for index2 := range current.Tables {
+			if database.Tables[index].Name == current.Tables[index2].Name {
+				present = true
+				position = index2
+				break
+			}
+		}
+
+		if present {	// Alter table.
+			go database.Tables[index].Alter(channel, conn, &current.Tables[position])
+		} else {
+			go database.Tables[index].Create(channel, conn)
+		}
+		count++
 	}
 
 	// Delete tables in database and not in XML.
@@ -32,33 +62,9 @@ func (database *Database) Apply(conn *Connection) {
 		}
 
 		if ! present {
-			log.Log(fmt.Sprintf("Dropping table %s.", current.Tables[index].Name))
-			sql := fmt.Sprintf("DROP TABLE `%s`", current.Tables[index].Name)
-			log.Debug(sql)
+			go current.Tables[index].Drop(conn, channel)
+			count++
 		}
-	}
-
-	channel, count := make(chan bool), 0
-	// Process remaining tables.
-	for index := range database.Tables {
-		present := false
-		position := 0
-		for index2 := range current.Tables {
-			if database.Tables[index].Name == current.Tables[index2].Name {
-				present = true
-				position = index2
-				break
-			}
-		}
-
-		if present {	// Alter table.
-			log.Log(fmt.Sprintf("Altering table %s.", database.Tables[index].Name))
-			go database.Tables[index].Alter(channel, &current.Tables[position])
-		} else {
-			log.Log(fmt.Sprintf("Creating table %s.", database.Tables[index].Name))
-			go database.Tables[index].Create(channel)
-		}
-		count++
 	}
 
 	result := true
@@ -67,11 +73,14 @@ func (database *Database) Apply(conn *Connection) {
 	}
 	close(channel)
 
-	log.Verbose("BEGIN")
-
-	if result {
-		log.Verbose("COMMIT")
-	} else {
-		log.Verbose("ROLLBACK")
+	_, _, err = conn.Query("SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS")
+	if nil != err {
+		panic(err)
 	}
+	_, _, err = conn.Query("SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS")
+	if nil != err {
+		panic(err)
+	}
+
+	return result
 }

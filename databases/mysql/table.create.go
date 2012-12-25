@@ -1,11 +1,11 @@
 package mysql
 
 import (
-	"fmt"
 	"github.com/scalia/mysynql/log"
+	"fmt"
 )
 
-func (table *Table) Create(channel chan bool) {
+func (table *Table) Create(channel chan bool, conn *Connection) {
 	log.Log(fmt.Sprintf("Creating table `%s`", table.Name))
 
 	defer func() {
@@ -15,7 +15,6 @@ func (table *Table) Create(channel chan bool) {
 		}
 		channel <- nil == r
 	}()
-
 
 	sql := fmt.Sprintf("CREATE TABLE `%s` (", table.Name)
 
@@ -96,5 +95,8 @@ func (table *Table) Create(channel chan bool) {
 	sql += fmt.Sprintf("\n) ENGINE=%s DEFAULT COLLATE=%s", table.Engine, table.Collation)
 	log.Debug(sql)
 
-//	return sql
+	_, _, err := conn.Query(sql)
+	if nil != err {
+		panic(err)
+	}
 }
