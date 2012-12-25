@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (table *Table) ReadConnection(conn *Connection, channel chan bool) {
+func (table *Table) ReadConnection(conn *Connection, channel chan bool, readData bool) {
 	log.Log(fmt.Sprintf("Reading table `%s`.`%s`", conn.DbName, table.Name))
 
 	defer func() {
@@ -131,25 +131,28 @@ func (table *Table) ReadConnection(conn *Connection, channel chan bool) {
 		table.ForeignKeys = append(table.ForeignKeys, fk)
 	}
 
-	// Read data
-	sql = fmt.Sprintf("SELECT * FROM `%s`", table.Name)
-	stmt, err = conn.Prepare(sql)
-	if nil != err { // Unknown error happened.
-		panic(err)
-	}
-
-	rows, res, err = stmt.Exec()
-	if nil != err {
-		panic(err)
-	}
-
-	table.Rows = make([]Row, 0)
-	fields := res.Fields()
-	for _, row := range rows {
-		r := Row{}
-		for _, field := range fields {
-			r.Fields = append(r.Fields, Field{field.Name, row.Str(res.Map(field.Name))})
+	table.TruncateTable = readData
+	if readData {
+		// Read data
+		sql = fmt.Sprintf("SELECT * FROM `%s`", table.Name)
+		stmt, err = conn.Prepare(sql)
+		if nil != err { // Unknown error happened.
+			panic(err)
 		}
-		table.Rows = append(table.Rows, r)
+
+		rows, res, err = stmt.Exec()
+		if nil != err {
+			panic(err)
+		}
+
+		table.Rows = make([]Row, 0)
+		fields := res.Fields()
+		for _, row := range rows {
+			r := Row{}
+			for _, field := range fields {
+				r.Fields = append(r.Fields, Field{field.Name, row.Str(res.Map(field.Name))})
+			}
+			table.Rows = append(table.Rows, r)
+		}
 	}
 }

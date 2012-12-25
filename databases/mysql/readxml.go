@@ -6,7 +6,7 @@ import (
 	"encoding/xml"
 )
 
-func ReadStructure(file string) Database {
+func ReadXML(file string) *Database {
 	xmlFile, err := os.Open(file)
 	if nil != err {
 		panic(fmt.Sprintf("Error opening file:", err))
@@ -18,5 +18,5 @@ func ReadStructure(file string) Database {
 	var dump Database
 	decoder.Decode(&dump)
 
-	return dump
+	return &dump
 }

@@ -16,7 +16,7 @@ func restore() {
 
 	opts := & options.ProgramOptions
 
-	database := mysql.ReadStructure(opts.StructureFile)
+	database := mysql.ReadXML(opts.StructureFile)
 
 	if opts.Debug {
 		xml, err := xml.MarshalIndent(database, "", "\t")
@@ -27,7 +27,7 @@ func restore() {
 		log.Debug(string(xml))
 	}
 
-//	database.Apply()
+	mysql.Apply(database, opts.Host, opts.User, opts.Pass, opts.SchemaName)
 
 	endTime := time.Now()
 	log.Verbose(fmt.Sprintf("Completed in %v.", endTime.Sub(startTime)))

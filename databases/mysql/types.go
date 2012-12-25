@@ -19,6 +19,7 @@ type Table struct {
 	Indexes []Index `xml:"indexes>index,omitempty"`
 	ForeignKeys []ForeignKey `xml:"foreign_keys>foreign_key,omitempty"`
 	Rows []Row `xml:"rows>row,omitempty"`
+	TruncateTable bool `xml:"truncate,attr"`
 }
 
 type Column struct {

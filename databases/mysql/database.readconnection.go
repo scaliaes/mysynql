@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (database *Database) ReadConnection(conn *Connection) {
+func (database *Database) ReadConnection(conn *Connection, readData bool) {
 	dbname := conn.DbName
 	sql := "SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME" +
 		" FROM INFORMATION_SCHEMA.SCHEMATA" +
@@ -63,7 +63,7 @@ func (database *Database) ReadConnection(conn *Connection) {
 
 	channel := make(chan bool)
 	for index, _ := range database.Tables {
-		go database.Tables[index].ReadConnection(conn, channel)
+		go database.Tables[index].ReadConnection(conn, channel, readData)
 	}
 
 	result := true
