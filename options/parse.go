@@ -31,6 +31,7 @@ func init() {
 
 	// Dump mode parameters
 	flag.Var(&ProgramOptions.DataTables, "data", "dump data from these tables.")
+	flag.Var(&ProgramOptions.TruncateTables, "truncate", "truncate data from these tables.")
 
 	// Verbosity level
 	flag.BoolVar(&ProgramOptions.VeryQuiet, "qq", false, "don't produce any output.")

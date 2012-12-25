@@ -9,7 +9,7 @@ type Options struct {
 	Version bool
 
 	// Dump mode parameters.
-	DataTables StringList
+	DataTables, TruncateTables StringList
 
 	// Verbosity level.
 	VeryQuiet, Quiet, Verbose, VeryVerbose, Debug bool

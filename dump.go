@@ -18,7 +18,7 @@ func dump() {
 
 	opts := & options.ProgramOptions
 
-	database := mysql.ReadConnection(opts.Host, opts.User, opts.Pass, opts.SchemaName, opts.DataTables)
+	database := mysql.ReadConnection(opts.Host, opts.User, opts.Pass, opts.SchemaName, opts.DataTables, opts.TruncateTables)
 
 	xml, err := xml.MarshalIndent(database, "", "\t")
 	if nil != err {

@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func (database *Database) ReadConnection(conn *Connection, dataTables options.StringList) {
+func (database *Database) ReadConnection(conn *Connection, dataTables, truncateTables options.StringList) {
 	dbname := conn.DbName
 	sql := "SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME" +
 		" FROM INFORMATION_SCHEMA.SCHEMATA" +
@@ -67,7 +67,8 @@ func (database *Database) ReadConnection(conn *Connection, dataTables options.St
 	ntables := len(database.Tables)
 	for index, _ := range database.Tables {
 		dumpData := dataTables.Contains(database.Tables[index].Name)
-		go database.Tables[index].ReadConnection(conn, channel, dumpData)
+		truncateData := truncateTables.Contains(database.Tables[index].Name)
+		go database.Tables[index].ReadConnection(conn, channel, dumpData, truncateData)
 	}
 	
 	result := true

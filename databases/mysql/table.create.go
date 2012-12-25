@@ -99,4 +99,7 @@ func (table *Table) Create(channel chan bool, conn *Connection) {
 	if nil != err {
 		panic(err)
 	}
+
+	// Insert data
+	table.Data(conn)
 }

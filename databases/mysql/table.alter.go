@@ -18,4 +18,10 @@ func (table *Table) Alter(channel chan bool, conn *Connection, current *Table) {
 
 	sql := fmt.Sprintf("ALTER TABLE `%s`", table.Name)
 	log.Log(sql)
+
+	if table.TruncateTable {
+		table.Truncate(conn)
+	}
+
+	table.Data(conn)
 }

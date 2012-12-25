@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (table *Table) ReadConnection(conn *Connection, channel chan bool, readData bool) {
+func (table *Table) ReadConnection(conn *Connection, channel chan bool, readData, truncateData bool) {
 	log.Log(fmt.Sprintf("Reading table `%s`.`%s`", conn.DbName, table.Name))
 
 	defer func() {
@@ -131,7 +131,7 @@ func (table *Table) ReadConnection(conn *Connection, channel chan bool, readData
 		table.ForeignKeys = append(table.ForeignKeys, fk)
 	}
 
-	table.TruncateTable = readData
+	table.TruncateTable = truncateData
 	if readData {
 		log.Log(fmt.Sprintf("Dumping data from table `%s`.`%s`", conn.DbName, table.Name))
 		// Read data
