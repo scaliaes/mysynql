@@ -20,55 +20,22 @@ func (table *Table) Create(channel chan bool, conn *Connection) {
 
 	first := true
 
-	// Columns
+	// Columns.
 	for _, column := range table.Columns {
 		if ! first {
 			sql += ","
 		}
-		sql += fmt.Sprintf("\n\t`%s` %s", column.Name, column.FullType)
-
-		// These types have a charset and a collation.
-		switch column.Type {
-		case "char": fallthrough
-		case "varchar": fallthrough
-		case "text": fallthrough
-		case "enum": fallthrough
-		case "set":
-			sql += fmt.Sprintf(" CHARACTER SET %s COLLATE %s", column.Charset, column.Collation)
-		}
-
-		if ! column.Null {
-			sql += " NOT NULL"
-		}
-		if "" != column.Extra {
-			sql += " " + column.Extra
-		}
-		if "" != column.Default {
-			sql += fmt.Sprintf(" DEFAULT '%s'", column.Default)
-		}
+		sql += fmt.Sprintf("\n\t`%s` %s", column.Name, column.Definition())
 		first = false
 	}
 
-	// Indexes
+	// Indexes.
 	for _, index := range table.Indexes {
 		if ! first {
 			sql += ","
 		}
 
-		sql += "\n\t"
-
-		if "PRIMARY" == index.Name {	// It's a primary index.
-			sql += "PRIMARY KEY ("
-		} else {	// It's a regular index.
-			if index.Unique {
-				sql += "UNIQUE "
-			}
-			sql += fmt.Sprintf("KEY `%s` (", index.Name)
-		}
-		for _, column := range index.Columns {
-			sql += "`" + column + "`"
-		}
-		sql += ")"
+		sql += "\n\t" + index.Definition()
 		first = false
 	}
 
@@ -78,27 +45,7 @@ func (table *Table) Create(channel chan bool, conn *Connection) {
 			sql += ","
 		}
 
-		sql += fmt.Sprintf("\n\tCONSTRAINT `%s` FOREIGN KEY (", fk.Name)
-		first2 := true
-		for _, column := range fk.Columns {
-			if ! first2 {
-				sql += ","
-			}
-			sql += "`" + column.Referencer + "`"
-			first2 = false
-		}
-
-		sql += fmt.Sprintf(") REFERENCES `%s`.`%s` (", fk.Schema, fk.Table)
-		first2 = true
-		for _, column := range fk.Columns {
-			if ! first2 {
-				sql += ","
-			}
-			sql += "`" + column.Referenced + "`"
-			first2 = false
-		}
-
-		sql += fmt.Sprintf(") ON DELETE %s ON UPDATE %s", fk.OnDelete, fk.OnUpdate)
+		sql += "\n\t" + fk.Definition()
 		first = false
 	}
 
