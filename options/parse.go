@@ -33,6 +33,9 @@ func init() {
 	flag.Var(&ProgramOptions.DataTables, "data", "dump data from these tables.")
 	flag.Var(&ProgramOptions.TruncateTables, "truncate", "truncate data from these tables.")
 
+	flag.BoolVar(&ProgramOptions.DataTablesAll, "data-all", false, "dump data from all tables.")
+	flag.BoolVar(&ProgramOptions.TruncateTablesAll, "truncate-all", false, "truncate all tables.")
+
 	// Verbosity level
 	flag.BoolVar(&ProgramOptions.VeryQuiet, "qq", false, "don't produce any output.")
 	flag.BoolVar(&ProgramOptions.Quiet, "q", false, "only show errors.")

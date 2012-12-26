@@ -9,7 +9,7 @@ import (
 func (database *Database) Apply(conn *Connection) bool {
 	opts := & options.ProgramOptions
 
-	current := ReadConnection(opts.Host, opts.User, opts.Pass, opts.SchemaName, options.StringList{}, options.StringList{})
+	current := ReadConnection(opts.Host, opts.User, opts.Pass, opts.SchemaName, options.StringList{}, options.StringList{}, false, false)
 
 	// Disable checks.
 	_, _, err := conn.Query("SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0")

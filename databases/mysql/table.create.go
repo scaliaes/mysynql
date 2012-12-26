@@ -79,13 +79,23 @@ func (table *Table) Create(channel chan bool, conn *Connection) {
 		}
 
 		sql += fmt.Sprintf("\n\tCONSTRAINT `%s` FOREIGN KEY (", fk.Name)
+		first2 := true
 		for _, column := range fk.Columns {
+			if ! first2 {
+				sql += ","
+			}
 			sql += "`" + column.Referencer + "`"
+			first2 = false
 		}
 
 		sql += fmt.Sprintf(") REFERENCES `%s`.`%s` (", fk.Schema, fk.Table)
+		first2 = true
 		for _, column := range fk.Columns {
+			if ! first2 {
+				sql += ","
+			}
 			sql += "`" + column.Referenced + "`"
+			first2 = false
 		}
 
 		sql += fmt.Sprintf(") ON DELETE %s ON UPDATE %s", fk.OnDelete, fk.OnUpdate)
