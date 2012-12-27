@@ -63,5 +63,6 @@ type Row struct {
 
 type Field struct {
 	Name string `xml:"name,attr"`
+	IsNull bool `xml:"null,attr,omitempty"`
 	Value string `xml:",chardata"`
 }

@@ -15,16 +15,24 @@ func (table *Table) Data(conn *Connection) {
 		sqlInsert = fmt.Sprintf("INSERT INTO `%s` (", table.Name)
 
 		first := true
-		params := make([]interface{}, 0)
+		paramsSelect := make([]interface{}, 0)
+		paramsInsert := make([]interface{}, 0)
 		for _, field := range row.Fields {
 			if ! first {
 				sqlSelect += " AND"
 				sqlInsert += ", "
 			}
 
-			sqlSelect += fmt.Sprintf(" `%s`=?", field.Name)
 			sqlInsert += fmt.Sprintf("`%s`", field.Name)
-			params = append(params, field.Value)
+
+			if field.IsNull {
+				sqlSelect += fmt.Sprintf(" `%s` IS NULL", field.Name)
+				paramsInsert = append(paramsInsert, nil)
+			} else {
+				sqlSelect += fmt.Sprintf(" `%s`=?", field.Name)
+				paramsSelect = append(paramsSelect, field.Value)
+				paramsInsert = append(paramsInsert, field.Value)
+			}
 
 			first = false
 		}
@@ -36,7 +44,7 @@ func (table *Table) Data(conn *Connection) {
 		}
 
 		// Bind parameters
-		stmt.Bind(params...)
+		stmt.Bind(paramsSelect...)
 
 		rows, res, err := stmt.Exec()
 		if nil != err {
@@ -47,7 +55,7 @@ func (table *Table) Data(conn *Connection) {
 		if 0 == rows[0].Int(res.Map("COUNT(*)")) {
 			sqlInsert += " VALUES ("
 			first = true
-			for i:= len(params); i>0; i-- {
+			for i:= len(paramsInsert); i>0; i-- {
 				if ! first {
 					sqlInsert +=", "
 				}
@@ -63,7 +71,7 @@ func (table *Table) Data(conn *Connection) {
 					panic(err)
 			}
 			// Bind parameters
-			stmt.Bind(params...)
+			stmt.Bind(paramsInsert...)
 
 			_, _, err = stmt.Exec()
 			if nil != err {

@@ -151,7 +151,9 @@ func (table *Table) ReadConnection(conn *Connection, channel chan bool, readData
 		for _, row := range rows {
 			r := Row{}
 			for _, field := range fields {
-				r.Fields = append(r.Fields, Field{field.Name, row.Str(res.Map(field.Name))})
+				index := res.Map(field.Name)
+				isnull := nil == row[index]
+				r.Fields = append(r.Fields, Field{field.Name, isnull, row.Str(index)})
 			}
 			table.Rows = append(table.Rows, r)
 		}
@@ -159,3 +161,4 @@ func (table *Table) ReadConnection(conn *Connection, channel chan bool, readData
 
 	log.Log(fmt.Sprintf("Done reading table `%s`.`%s`", conn.DbName, table.Name))
 }
+
