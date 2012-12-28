@@ -15,8 +15,13 @@ func (index *Index) Definition() string {
 		}
 		sql += fmt.Sprintf("KEY `%s` (", index.Name)
 	}
+	first := true
 	for _, column := range index.Columns {
+		if ! first {
+			sql += ", "
+		}
 		sql += "`" + column + "`"
+		first = false
 	}
 	sql += ")"
 

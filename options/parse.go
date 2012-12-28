@@ -36,6 +36,10 @@ func init() {
 	flag.BoolVar(&ProgramOptions.DataTablesAll, "data-all", false, "dump data from all tables.")
 	flag.BoolVar(&ProgramOptions.TruncateTablesAll, "truncate-all", false, "truncate all tables.")
 
+	// Restore mode parameters
+	flag.BoolVar(&ProgramOptions.NoData, "no-data", false, "do not touch database data (no TRUNCATE or INSERT operations)..")
+	flag.StringVar(&ProgramOptions.ConflictStrategy, "conflict-strategy", "fail", "strategy to apply on conflicting rows (fail, skip, replace).")
+
 	// Verbosity level
 	flag.BoolVar(&ProgramOptions.VeryQuiet, "qq", false, "don't produce any output.")
 	flag.BoolVar(&ProgramOptions.Quiet, "q", false, "only show errors.")
@@ -51,6 +55,17 @@ func usage() {
 func Parse() bool {
 	flag.Usage = usage
 	flag.Parse()
+
+	// Check valid values for --conflict-strategy.
+	switch ProgramOptions.ConflictStrategy {
+	case "fail":
+	case "skip":
+	case "replace":
+	default:
+		fmt.Fprintln(os.Stderr, "Invalid value for --conflict-strategy, expected one of: fail, skip or replace.")
+		usage()
+		return false
+	}
 
 	// Host must be of the form host:port
 	if ! strings.ContainsRune(ProgramOptions.Host, ':') {

@@ -5,14 +5,22 @@ import (
 	"fmt"
 )
 
-func (table *Table) Data(conn *Connection) {
+func (table *Table) Data(conn *Connection, conflictStrategy string) {
 	log.Log(fmt.Sprintf("Inserting data into table `%s`", table.Name))
 
 	for _, row := range table.Rows {
 		sqlSelect, sqlInsert := "", ""
 		
 		sqlSelect = fmt.Sprintf("SELECT COUNT(*) FROM `%s` WHERE", table.Name)
-		sqlInsert = fmt.Sprintf("INSERT INTO `%s` (", table.Name)
+
+		switch conflictStrategy {
+			case "fail":
+			sqlInsert = fmt.Sprintf("INSERT INTO `%s` (", table.Name)
+			case "skip":
+			sqlInsert = fmt.Sprintf("INSERT IGNORE INTO `%s` (", table.Name)
+			case "replace":
+			sqlInsert = fmt.Sprintf("REPLACE INTO `%s` (", table.Name)
+		}
 
 		first := true
 		paramsSelect := make([]interface{}, 0)
@@ -40,7 +48,7 @@ func (table *Table) Data(conn *Connection) {
 
 		stmt, err := conn.Prepare(sqlSelect)
 		if nil != err { // Unknown error happened.
-				panic(err)
+			panic(err)
 		}
 
 		// Bind parameters
@@ -68,7 +76,7 @@ func (table *Table) Data(conn *Connection) {
 
 			stmt, err = conn.Prepare(sqlInsert)
 			if nil != err { // Unknown error happened.
-					panic(err)
+				panic(err)
 			}
 			// Bind parameters
 			stmt.Bind(paramsInsert...)

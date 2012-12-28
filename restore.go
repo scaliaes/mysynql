@@ -27,7 +27,7 @@ func restore() {
 		log.Debug(string(xml))
 	}
 
-	mysql.Apply(database, opts.Host, opts.User, opts.Pass, opts.SchemaName)
+	mysql.Apply(database, opts.Host, opts.User, opts.Pass, opts.SchemaName, opts.NoData, opts.ConflictStrategy)
 
 	endTime := time.Now()
 	log.Verbose(fmt.Sprintf("Completed in %v.", endTime.Sub(startTime)))

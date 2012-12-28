@@ -58,5 +58,5 @@ func (table *Table) Create(channel chan bool, conn *Connection) {
 	}
 
 	// Insert data
-	table.Data(conn)
+	table.Data(conn, "fail")
 }

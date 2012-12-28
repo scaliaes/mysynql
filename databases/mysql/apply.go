@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func Apply(database *Database, host, user, pass, dbname string) {
+func Apply(database *Database, host, user, pass, dbname string, noData bool, conflictStrategy string) {
 	defer func() {
 		if r := recover(); nil != r {
 			log.Error(fmt.Sprintf("%s", r))
@@ -14,5 +14,5 @@ func Apply(database *Database, host, user, pass, dbname string) {
 
 	conn := NewConnection(host, user, pass, dbname)
 
-	database.Apply(&conn)
+	database.Apply(&conn, noData, conflictStrategy)
 }

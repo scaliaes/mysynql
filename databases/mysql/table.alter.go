@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (table *Table) Alter(channel chan bool, conn *Connection, current *Table) {
+func (table *Table) Alter(channel chan bool, conn *Connection, current *Table, noData bool, conflictStrategy string) {
 	log.Log(fmt.Sprintf("Processing diff of table `%s`", table.Name))
 
 	defer func() {
@@ -17,7 +17,7 @@ func (table *Table) Alter(channel chan bool, conn *Connection, current *Table) {
 	}()
 
 	// Truncate, if needed.
-	if table.TruncateTable {
+	if ! noData && table.TruncateTable {
 		table.Truncate(conn)
 	}
 
@@ -209,6 +209,8 @@ func (table *Table) Alter(channel chan bool, conn *Connection, current *Table) {
 		}
 	}
 
-	// Add data.
-	table.Data(conn)
+	if ! noData {
+		// Add data.
+		table.Data(conn, conflictStrategy)
+	}
 }

@@ -12,6 +12,10 @@ type Options struct {
 	DataTables, TruncateTables StringList
 	DataTablesAll, TruncateTablesAll bool
 
+	// Restore mode parameters.
+	NoData bool
+	ConflictStrategy string
+
 	// Verbosity level.
 	VeryQuiet, Quiet, Verbose, VeryVerbose, Debug bool
 }

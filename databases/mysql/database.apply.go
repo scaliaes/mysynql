@@ -6,7 +6,7 @@ import (
 	"encoding/xml"
 )
 
-func (database *Database) Apply(conn *Connection) bool {
+func (database *Database) Apply(conn *Connection, noData bool, conflictStrategy string) bool {
 	opts := & options.ProgramOptions
 
 	current := ReadConnection(opts.Host, opts.User, opts.Pass, opts.SchemaName, options.StringList{}, options.StringList{}, false, false)
@@ -44,26 +44,28 @@ func (database *Database) Apply(conn *Connection) bool {
 		}
 
 		if present {	// Alter table.
-			go database.Tables[index].Alter(channel, conn, &current.Tables[position])
+			go database.Tables[index].Alter(channel, conn, &current.Tables[position], noData, conflictStrategy)
 		} else {
 			go database.Tables[index].Create(channel, conn)
 		}
 		count++
 	}
 
-	// Delete tables in database and not in XML.
-	for index := range current.Tables {
-		present := false
-		for index2 := range database.Tables {
-			if current.Tables[index].Name == database.Tables[index2].Name {
-				present = true
-				break
+	if ! noData {
+		// Delete tables in database and not in XML.
+		for index := range current.Tables {
+			present := false
+			for index2 := range database.Tables {
+				if current.Tables[index].Name == database.Tables[index2].Name {
+					present = true
+					break
+				}
 			}
-		}
 
-		if ! present {
-			go current.Tables[index].Drop(conn, channel)
-			count++
+			if ! present {
+				go current.Tables[index].Drop(conn, channel)
+				count++
+			}
 		}
 	}
 
