@@ -44,9 +44,9 @@ func (database *Database) Apply(conn *Connection, noData bool, conflictStrategy 
 		}
 
 		if present {	// Alter table.
-			go database.Tables[index].Alter(channel, conn, &current.Tables[position], noData, conflictStrategy)
+			go database.Tables[index].Alter(channel, conn, database.Name, &current.Tables[position], noData, conflictStrategy)
 		} else {
-			go database.Tables[index].Create(channel, conn)
+			go database.Tables[index].Create(channel, conn, database.Name)
 		}
 		count++
 	}

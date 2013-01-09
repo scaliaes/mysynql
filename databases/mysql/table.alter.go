@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (table *Table) Alter(channel chan bool, conn *Connection, current *Table, noData bool, conflictStrategy string) {
+func (table *Table) Alter(channel chan bool, conn *Connection, dbName string, current *Table, noData bool, conflictStrategy string) {
 	log.Log(fmt.Sprintf("Processing diff of table `%s`", table.Name))
 
 	defer func() {
@@ -177,9 +177,15 @@ func (table *Table) Alter(channel chan bool, conn *Connection, current *Table, n
 					}
 				}
 
+				db := ""
+				if dbName != fk.Schema {
+					db = fk.Schema
+				} else {
+					db = conn.DbName
+				}
 				switch false {
 				case equals: fallthrough
-				case fk.Schema == currentFk.Schema: fallthrough
+				case db == currentFk.Schema: fallthrough
 				case fk.Table == currentFk.Table: fallthrough
 				case fk.OnUpdate == currentFk.OnUpdate: fallthrough
 				case fk.OnDelete == currentFk.OnDelete:
@@ -194,7 +200,7 @@ func (table *Table) Alter(channel chan bool, conn *Connection, current *Table, n
 			if ! first {
 				sql += ","
 			}
-			sql += fmt.Sprintf("\n\tADD %s", fk.Definition())
+			sql += fmt.Sprintf("\n\tADD %s", fk.Definition(dbName))
 			first = false
 		}
 	}

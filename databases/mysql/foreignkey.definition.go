@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (fk *ForeignKey) Definition() string {
+func (fk *ForeignKey) Definition(dbname string) string {
 	sql := fmt.Sprintf("CONSTRAINT `%s` FOREIGN KEY (", fk.Name)
 	first := true
 	for _, column := range fk.Columns {
@@ -15,7 +15,12 @@ func (fk *ForeignKey) Definition() string {
 		first = false
 	}
 
-	sql += fmt.Sprintf(") REFERENCES `%s`.`%s` (", fk.Schema, fk.Table)
+	sql += ") REFERENCES "
+	if fk.Schema != dbname {
+		sql += fmt.Sprintf("`%s`.", fk.Schema)
+	}
+	sql += fmt.Sprintf("`%s` (", fk.Table)
+
 	first = true
 	for _, column := range fk.Columns {
 		if ! first {

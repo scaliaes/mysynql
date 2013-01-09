@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (table *Table) Create(channel chan bool, conn *Connection) {
+func (table *Table) Create(channel chan bool, conn *Connection, dbName string) {
 	log.Log(fmt.Sprintf("Creating table `%s`", table.Name))
 
 	defer func() {
@@ -45,7 +45,7 @@ func (table *Table) Create(channel chan bool, conn *Connection) {
 			sql += ","
 		}
 
-		sql += "\n\t" + fk.Definition()
+		sql += "\n\t" + fk.Definition(dbName)
 		first = false
 	}
 
