@@ -8,80 +8,79 @@ import (
 func (table *Table) Data(conn *Connection, conflictStrategy string) {
 	log.Log(fmt.Sprintf("Inserting data into table `%s`", table.Name))
 
-	for _, row := range table.Rows {
-		sqlSelect, sqlInsert := "", ""
+	row := table.Rows[0]
+	sqlSelect, sqlInsert := "", ""
 		
-		sqlSelect = fmt.Sprintf("SELECT COUNT(*) FROM `%s` WHERE", table.Name)
+	sqlSelect = fmt.Sprintf("SELECT COUNT(*) FROM `%s` WHERE", table.Name)
 
-		switch conflictStrategy {
-			case "fail":
-			sqlInsert = fmt.Sprintf("INSERT INTO `%s` (", table.Name)
-			case "skip":
-			sqlInsert = fmt.Sprintf("INSERT IGNORE INTO `%s` (", table.Name)
-			case "replace":
-			sqlInsert = fmt.Sprintf("REPLACE INTO `%s` (", table.Name)
+	switch conflictStrategy {
+	case "fail":
+		sqlInsert = fmt.Sprintf("INSERT INTO `%s` (", table.Name)
+	case "skip":
+		sqlInsert = fmt.Sprintf("INSERT IGNORE INTO `%s` (", table.Name)
+	case "replace":
+		sqlInsert = fmt.Sprintf("REPLACE INTO `%s` (", table.Name)
+	}
+
+	first := true
+	for _, field := range row.Fields {
+		if ! first {
+			sqlSelect += " AND"
+			sqlInsert += ", "
 		}
 
-		first := true
+		sqlSelect += fmt.Sprintf(" (`%s`=? OR (`%s` IS NULL AND ? IS NULL))", field.Name, field.Name)
+		sqlInsert += fmt.Sprintf("`%s`", field.Name)
+
+		first = false
+	}
+	sqlInsert += ")"
+
+	sqlInsert += " VALUES ("
+	first = true
+	for i:= len(row.Fields); i>0; i-- {
+		if ! first {
+			sqlInsert +=", "
+		}
+		sqlInsert += "?"
+		first = false
+	}
+	sqlInsert += ")"
+
+	log.Debug(sqlSelect)
+	stmtSelect, err := conn.Prepare(sqlSelect)
+	if nil != err { // Unknown error happened.
+		panic(err)
+	}
+
+	log.Debug(sqlInsert)
+	stmtInsert, err := conn.Prepare(sqlInsert)
+	if nil != err { // Unknown error happened.
+		panic(err)
+	}
+
+	for _, row := range table.Rows {
 		paramsSelect := make([]interface{}, 0)
 		paramsInsert := make([]interface{}, 0)
+
 		for _, field := range row.Fields {
-			if ! first {
-				sqlSelect += " AND"
-				sqlInsert += ", "
-			}
-
-			sqlInsert += fmt.Sprintf("`%s`", field.Name)
-
 			if field.IsNull {
-				sqlSelect += fmt.Sprintf(" `%s` IS NULL", field.Name)
+				paramsSelect = append(paramsSelect, nil, nil)
 				paramsInsert = append(paramsInsert, nil)
 			} else {
-				sqlSelect += fmt.Sprintf(" `%s`=?", field.Name)
-				paramsSelect = append(paramsSelect, field.Value)
+				paramsSelect = append(paramsSelect, field.Value, field.Value)
 				paramsInsert = append(paramsInsert, field.Value)
 			}
-
-			first = false
-		}
-		sqlInsert += ")"
-
-		stmt, err := conn.Prepare(sqlSelect)
-		if nil != err { // Unknown error happened.
-			panic(err)
 		}
 
-		// Bind parameters
-		stmt.Bind(paramsSelect...)
-
-		rows, res, err := stmt.Exec()
+		rows, res, err := stmtSelect.Exec(paramsSelect...)
 		if nil != err {
 			panic(err)
 		}
 
 		// Insert row
 		if 0 == rows[0].Int(res.Map("COUNT(*)")) {
-			sqlInsert += " VALUES ("
-			first = true
-			for i:= len(paramsInsert); i>0; i-- {
-				if ! first {
-					sqlInsert +=", "
-				}
-				sqlInsert += "?"
-				first = false
-			}
-			sqlInsert += ")"
-
-			log.Debug(sqlInsert)
-
-			stmt, err = conn.Prepare(sqlInsert)
-			if nil != err { // Unknown error happened.
-				panic(err)
-			}
-			// Bind parameters
-			stmt.Bind(paramsInsert...)
-
-			_, _, err = stmt.Exec()
+			_, _, err = stmtInsert.Exec(paramsInsert...)
 			if nil != err {
 				panic(err)
 			}
