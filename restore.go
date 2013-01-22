@@ -7,6 +7,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"time"
+	"os"
 )
 
 func restore() {
@@ -27,7 +28,9 @@ func restore() {
 		log.Debug(string(xml))
 	}
 
-	mysql.Apply(database, opts.Host, opts.User, opts.Pass, opts.SchemaName, opts.NoData, opts.ConflictStrategy)
+	if ! mysql.Apply(database, opts.Host, opts.User, opts.Pass, opts.SchemaName, opts.NoData, opts.ConflictStrategy) {
+		os.Exit(2)
+	}
 
 	endTime := time.Now()
 	log.Verbose(fmt.Sprintf("Completed in %v.", endTime.Sub(startTime)))
