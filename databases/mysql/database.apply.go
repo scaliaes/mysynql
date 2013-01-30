@@ -6,7 +6,7 @@ import (
 	"encoding/xml"
 )
 
-func (database *Database) Apply(conn *Connection, noData bool, conflictStrategy string) bool {
+func (database *Database) Apply(conn *Connection, noData bool, conflictStrategy string, deleteTables bool) bool {
 	opts := & options.ProgramOptions
 
 	current := ReadConnection(opts.Host, opts.User, opts.Pass, opts.SchemaName, options.StringList{}, options.StringList{}, false, false)
@@ -41,6 +41,11 @@ func (database *Database) Apply(conn *Connection, noData bool, conflictStrategy 
 				position = index2
 				break
 			}
+		}
+
+		// Truncate tables if specified on restore.
+		if deleteTables {
+			database.Tables[index].Truncate(conn)
 		}
 
 		if present {	// Alter table.

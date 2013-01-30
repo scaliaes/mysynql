@@ -13,6 +13,7 @@ type Options struct {
 	DataTablesAll, TruncateTablesAll bool
 
 	// Restore mode parameters.
+	DeleteTables bool
 	NoData bool
 	ConflictStrategy string
 

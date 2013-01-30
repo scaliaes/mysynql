@@ -28,7 +28,7 @@ func restore() {
 		log.Debug(string(xml))
 	}
 
-	if ! mysql.Apply(database, opts.Host, opts.User, opts.Pass, opts.SchemaName, opts.NoData, opts.ConflictStrategy) {
+	if ! mysql.Apply(database, opts.Host, opts.User, opts.Pass, opts.SchemaName, opts.NoData, opts.ConflictStrategy, opts.DeleteTables) {
 		os.Exit(2)
 	}
 

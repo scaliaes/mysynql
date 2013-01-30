@@ -37,7 +37,8 @@ func init() {
 	flag.BoolVar(&ProgramOptions.TruncateTablesAll, "truncate-all", false, "truncate all tables.")
 
 	// Restore mode parameters
-	flag.BoolVar(&ProgramOptions.NoData, "no-data", false, "do not touch database data (no TRUNCATE or INSERT operations)..")
+	flag.BoolVar(&ProgramOptions.DeleteTables, "delete-tables", false, "[DANGEROUS] delete all tables before recreation")
+	flag.BoolVar(&ProgramOptions.NoData, "no-data", false, "do not touch database data (no TRUNCATE or INSERT operations).")
 	flag.StringVar(&ProgramOptions.ConflictStrategy, "conflict-strategy", "fail", "strategy to apply on conflicting rows (fail, skip, replace).")
 
 	// Verbosity level
