@@ -8,6 +8,10 @@ import (
 func (table *Table) Data(conn *Connection, conflictStrategy string) {
 	log.Log(fmt.Sprintf("Inserting data into table `%s`", table.Name))
 
+	if 0 == len(table.Rows) {
+		return
+	}
+
 	row := table.Rows[0]
 	sqlSelect, sqlInsert := "", ""
 		
