@@ -1,7 +1,7 @@
 package log
 
 func Error(message string) {
-	if ERROR <= currentLevel() {
-		log("ERROR", message)
-	}
+  if ERROR <= currentLevel() {
+    log("ERROR", message)
+  }
 }

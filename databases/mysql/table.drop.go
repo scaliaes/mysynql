@@ -1,26 +1,26 @@
 package mysql
 
 import (
-	"github.com/scalia/mysynql/log"
-	"fmt"
+  "fmt"
+  "github.com/scalia/mysynql/log"
 )
 
 func (table *Table) Drop(conn *Connection, channel chan bool) {
-	log.Log(fmt.Sprintf("Dropping table %s.", table.Name))
+  log.Log(fmt.Sprintf("Dropping table %s.", table.Name))
 
-	defer func() {
-		r := recover()
-		if nil != r {
-			log.Error(fmt.Sprintf("%s", r))
-		}
-		channel <- nil == r
-	}()
+  defer func() {
+    r := recover()
+    if nil != r {
+      log.Error(fmt.Sprintf("%s", r))
+    }
+    channel <- nil == r
+  }()
 
-	sql := fmt.Sprintf("DROP TABLE `%s`", table.Name)
-	log.Debug(sql)
+  sql := fmt.Sprintf("DROP TABLE `%s`", table.Name)
+  log.Debug(sql)
 
-	_, _, err := conn.Query(sql)
-	if nil != err {
-		panic(err)
-	}
+  _, _, err := conn.Query(sql)
+  if nil != err {
+    panic(err)
+  }
 }

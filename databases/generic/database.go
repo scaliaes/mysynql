@@ -1,5 +1,5 @@
 package generic
 
 type Database interface {
-	Apply()
+  Apply()
 }
